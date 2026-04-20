@@ -1,0 +1,11 @@
+build/
+*.o
+*.a
+*.so
+*.exe
+*.out
+coverage.info
+coverage_html/
+.vscode/
+.idea/
+*.user
