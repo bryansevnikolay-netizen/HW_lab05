@@ -1,5 +1,4 @@
 #include "Account.h"
-
 #include <stdexcept>
 
 Account::Account(int id, int balance)
