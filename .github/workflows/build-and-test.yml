@@ -13,10 +13,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y lcov
+      
       - name: Install Google Test and Mock
         run: |
           cd /tmp
@@ -27,19 +29,23 @@ jobs:
           make -j$(nproc)
           sudo make install
           sudo ldconfig
+      
       - name: Configure CMake with coverage
         run: |
           mkdir -p build
           cd build
-          cmake .. -DENABLE_COVERAGE=ON
+          cmake ../banking -DENABLE_COVERAGE=ON   # ← путь к banking
+      
       - name: Build
         run: |
           cd build
-          make
+          make -j$(nproc)
+      
       - name: Run tests
         run: |
           cd build
           ctest --output-on-failure
+      
       - name: Collect coverage
         run: |
           cd build
@@ -47,6 +53,7 @@ jobs:
           lcov --remove coverage.info '/usr/*' --output-file coverage.info --ignore-errors mismatch
           lcov --remove coverage.info '*/tests/*' --output-file coverage.info --ignore-errors mismatch
           lcov --list coverage.info
+      
       - name: Upload to Coveralls
         uses: coverallsapp/github-action@v2
         with:
