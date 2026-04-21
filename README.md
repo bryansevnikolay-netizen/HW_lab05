@@ -335,6 +335,7 @@ jobs:
         with:
           file: build/coverage.info
           format: lcov
+          
 ```
 4. Настройте [Coveralls.io](https://coveralls.io/).
 
