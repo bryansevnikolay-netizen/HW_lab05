@@ -31,7 +31,7 @@ enable_testing()
 add_subdirectory(tests)
 ```
 2. Создайте модульные тесты на классы `Transaction` и `Account`.
-    Cоздаем CMakeLists для тестов:
+Cоздаем CMakeLists для тестов:
 ```
 find_package(GTest REQUIRED)
 
@@ -61,7 +61,7 @@ if(ENABLE_COVERAGE)
     target_link_options(banking_tests PRIVATE --coverage)
 endif()
 ```
-    создание mock-файла, содержащего объекты, его методы:
+Cоздание mock-файла, содержащего объекты, его методы:
 ```
 #pragma once
 
@@ -77,7 +77,8 @@ public:
     MOCK_METHOD(void, Unlock, (), (override));
 };
 ```
-    Account:
+Account:
+а) тестовый класс с инициализацией и удалением объекта
 ```
 #include <gtest/gtest.h>
 #include <stdexcept>
@@ -94,20 +95,20 @@ protected:
     Account* account;
 };
 ```
-
+б) тест на корректную реализацию объекта
 ```
 TEST_F(AccountTest, ConstructorInitializesCorrectly) {
     EXPECT_EQ(account->id(), 1);
     EXPECT_EQ(account->GetBalance(), 1000);
 }
 ```
-
+в) тест на получение корректного баланса
 ```
 TEST_F(AccountTest, GetBalanceReturnsCorrectValue) {
     EXPECT_EQ(account->GetBalance(), 1000);
 }
 ```
-
+г) тест на возможность изменить баланс при заблокированном счете
 ```
 TEST_F(AccountTest, ChangeBalanceWorksWhenLocked) {
     account->Lock();
@@ -115,20 +116,20 @@ TEST_F(AccountTest, ChangeBalanceWorksWhenLocked) {
     EXPECT_EQ(account->GetBalance(), 1500);
 }
 ```
-
+д) тест на возращение исключение при изменении значения разблокированного счета
 ```
 TEST_F(AccountTest, ChangeBalanceThrowsWhenNotLocked) {
     EXPECT_THROW(account->ChangeBalance(500), std::runtime_error);
 }
 ```
-
+е) тест на возращение исключения при блокировке уже заблокированного счета
 ```
 TEST_F(AccountTest, LockThrowsWhenAlreadyLocked) {
     account->Lock();
     EXPECT_THROW(account->Lock(), std::runtime_error);
 }
 ```
-
+ж) тест на работу блокировки и разблокировки счета
 ```
 TEST_F(AccountTest, UnlockAllowsRelock) {
     account->Lock();
@@ -136,7 +137,7 @@ TEST_F(AccountTest, UnlockAllowsRelock) {
     EXPECT_NO_THROW(account->Lock());
 }
 ```
-
+з) тест на работу блокировки, изменения счета и разблокировки
 ```
 TEST_F(AccountTest, MultipleLockUnlockSequence) {
     for (int i = 0; i < 3; i++) {
@@ -147,8 +148,8 @@ TEST_F(AccountTest, MultipleLockUnlockSequence) {
     EXPECT_EQ(account->GetBalance(), 1300);
 }
 ```
-
-    Transaction:
+Transaction:
+а) тестовый класс с инициализацией и удалением объекта
 ```
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -173,7 +174,7 @@ protected:
 	delete to;
     }
 ```
-
+б) специальный класс для контроля вывода информации об объекте в поток
 ```
     class TestableTransaction : public Transaction {
     public:
@@ -184,53 +185,53 @@ protected:
 	}
     };
 ```
-
+в) реализацие mock-объектов для дальнейших тестов
 ```
     MockAccount* to;
     MockAccount* from;
     Transaction transaction;
 };
 ```
-
+г) тест на установку комиссии по умолчанию
 ```
 TEST_F(TransactionTest, ConstructorSetsDefaultFee) {
     Transaction t;
     EXPECT_EQ(t.fee(), 1);
 }
 ```
-
+д) тест на явную установку комиссии
 ```
 TEST_F(TransactionTest, SetFeeWorksCorrectly) {
     transaction.set_fee(20);
     EXPECT_EQ(transaction.fee(), 20);
 }
 ```
-
+е) тест на возращение исключения при переводе один и тот же счет 
 ```
 TEST_F(TransactionTest, MakeThrowsWhenSameAccount) {
     EXPECT_THROW(transaction.Make(*from, *from, 100), std::logic_error);
 }
 ```
-
+ж) тест на возращение исключения при переводе отрицательной суммы
 ```
 TEST_F(TransactionTest, MakeThrowWhenNegativeSum) {
     EXPECT_THROW(transaction.Make(*from, *to, -50), std::invalid_argument);
 }
 ```
-
+з) тест на возращение ошибки при переводе слишком маленькой суммы
 ```
 TEST_F(TransactionTest, MakeThrowsWhenSumLessThan100) {
     EXPECT_THROW(transaction.Make(*from, *to, 50), std::logic_error);
 }
 ```
-
+и) тест на перевод при слишком большой комиссии
 ```
 TEST_F(TransactionTest, MakeReturnsFalseWhenFeeTooHigh) {
     transaction.set_fee(100);
     EXPECT_FALSE(transaction.Make(*from, *to, 150));
 }
 ```
-
+к) тест на успешный перевод между счетами
 ```
 TEST_F(TransactionTest, MakeSucceedWhenSufficientFunds) {
     EXPECT_CALL(*from, Lock()).Times(1);
@@ -244,7 +245,7 @@ TEST_F(TransactionTest, MakeSucceedWhenSufficientFunds) {
     EXPECT_TRUE(transaction.Make(*from, *to, 150));
 }
 ```
-
+л) тест на перевод при недостаточном балансе
 ```
 TEST_F(TransactionTest, MakeRollsBackWhenInsufficientFunds) {
     EXPECT_CALL(*from, Lock()).Times(1);
@@ -259,7 +260,7 @@ TEST_F(TransactionTest, MakeRollsBackWhenInsufficientFunds) {
     EXPECT_FALSE(transaction.Make(*from, *to, 150));
 }
 ```
-
+м) тест на успешный перевод для проверки вывода значений в поток
 ```
 TEST_F(TransactionTest, SaveToDataBaseIsCalled) {
     TestableTransaction testTransaction;
@@ -281,7 +282,7 @@ TEST_F(TransactionTest, SaveToDataBaseIsCalled) {
 
 3. Настройте сборочную процедуру на **TravisCI**.
 ```
-name: Build, Test and Coverage
+name: Build, Test and Coverage 
 
 on:
   push:
@@ -294,13 +295,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout code		// скачивание кода
         uses: actions/checkout@v4
-      - name: Install dependencies
+      - name: Install dependencies		// установка инструментов для покрытия
         run: |
           sudo apt-get update
           sudo apt-get install -y lcov
-      - name: Install Google Test and Mock
+      - name: Install Google Test and Mock		//  установка библиотек для тестов
         run: |
           cd /tmp
           git clone https://github.com/google/googletest.git
@@ -310,27 +311,27 @@ jobs:
           make -j$(nproc)
           sudo make install
           sudo ldconfig
-      - name: Configure CMake with coverage
+      - name: Configure CMake with coverage		// настройка сборки
         run: |
           mkdir -p build
           cd build
           cmake .. -DENABLE_COVERAGE=ON
-      - name: Build
+      - name: Build // компиляция кода
         run: |
           cd build
           make
-      - name: Run tests
+      - name: Run tests		// запуск тестов
         run: |
           cd build
           ctest --output-on-failure
-      - name: Collect coverage
+      - name: Collect coverage		// анализ покрытия кода тестами
         run: |
           cd build
           lcov --directory . --capture --output-file coverage.info --ignore-errors mismatch
           lcov --remove coverage.info '/usr/*' --output-file coverage.info --ignore-errors mismatch
           lcov --remove coverage.info '*/tests/*' --output-file coverage.info --ignore-errors mismatch
           lcov --list coverage.info
-      - name: Upload to Coveralls
+      - name: Upload to Coveralls // отправление отчета в Coveralls.io
         uses: coverallsapp/github-action@v2
         with:
           file: build/coverage.info
