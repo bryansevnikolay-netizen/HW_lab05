@@ -31,7 +31,7 @@ enable_testing()
 add_subdirectory(tests)
 ```
 2. Создайте модульные тесты на классы `Transaction` и `Account`.
-Cоздаем CMakeLists для тестов:
+Cоздаем CMakeList для тестов:
 ```
 find_package(GTest REQUIRED)
 
@@ -116,13 +116,13 @@ TEST_F(AccountTest, ChangeBalanceWorksWhenLocked) {
     EXPECT_EQ(account->GetBalance(), 1500);
 }
 ```
-д) тест на возращение исключение при изменении значения разблокированного счета
+д) тест на возвращение исключение при изменении значения разблокированного счета
 ```
 TEST_F(AccountTest, ChangeBalanceThrowsWhenNotLocked) {
     EXPECT_THROW(account->ChangeBalance(500), std::runtime_error);
 }
 ```
-е) тест на возращение исключения при блокировке уже заблокированного счета
+е) тест на возвращение исключения при блокировке уже заблокированного счета
 ```
 TEST_F(AccountTest, LockThrowsWhenAlreadyLocked) {
     account->Lock();
@@ -185,7 +185,7 @@ protected:
 	}
     };
 ```
-в) реализацие mock-объектов для дальнейших тестов
+в) реализация mock-объектов для дальнейших тестов
 ```
     MockAccount* to;
     MockAccount* from;
@@ -206,19 +206,19 @@ TEST_F(TransactionTest, SetFeeWorksCorrectly) {
     EXPECT_EQ(transaction.fee(), 20);
 }
 ```
-е) тест на возращение исключения при переводе один и тот же счет 
+е) тест на возвращение исключения при переводе один и тот же счет 
 ```
 TEST_F(TransactionTest, MakeThrowsWhenSameAccount) {
     EXPECT_THROW(transaction.Make(*from, *from, 100), std::logic_error);
 }
 ```
-ж) тест на возращение исключения при переводе отрицательной суммы
+ж) тест на возвращение исключения при переводе отрицательной суммы
 ```
 TEST_F(TransactionTest, MakeThrowWhenNegativeSum) {
     EXPECT_THROW(transaction.Make(*from, *to, -50), std::invalid_argument);
 }
 ```
-з) тест на возращение ошибки при переводе слишком маленькой суммы
+з) тест на возвращение ошибки при переводе слишком маленькой суммы
 ```
 TEST_F(TransactionTest, MakeThrowsWhenSumLessThan100) {
     EXPECT_THROW(transaction.Make(*from, *to, 50), std::logic_error);
