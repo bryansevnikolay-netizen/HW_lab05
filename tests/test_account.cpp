@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
-#include <stdexcept>
-#include "Account.h"
+#include "mock_account.h"
 
 class AccountTest : public ::testing::Test {
 protected:
