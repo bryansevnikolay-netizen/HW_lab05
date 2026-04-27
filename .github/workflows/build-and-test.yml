@@ -30,8 +30,12 @@ jobs:
           sudo make install
           sudo ldconfig
       
-      - name: Configure CMake
-        run: cmake -B build -S .
+      - name: Configure CMake with coverage
+        run: |
+          cmake -B build -S . \
+            -DENABLE_COVERAGE=ON \
+            -DCMAKE_CXX_FLAGS="--coverage" \
+            -DCMAKE_C_FLAGS="--coverage"
       
       - name: Build
         run: cmake --build build --config Release -j$(nproc)
@@ -40,6 +44,9 @@ jobs:
         run: |
           cd build
           ./tests/run_tests
+      
+      - name: Find .gcda files (debug)
+        run: find build -name "*.gcda" -type f
       
       - name: Collect coverage
         run: |
