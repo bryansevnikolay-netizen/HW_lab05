@@ -30,21 +30,16 @@ jobs:
           sudo make install
           sudo ldconfig
       
-      - name: Configure CMake with coverage
-        run: |
-          mkdir -p build
-          cd build
-          cmake ../banking -DENABLE_COVERAGE=ON   # ← путь к banking
+      - name: Configure CMake
+        run: cmake -B build -S .
       
       - name: Build
-        run: |
-          cd build
-          make -j$(nproc)
+        run: cmake --build build --config Release -j$(nproc)
       
       - name: Run tests
         run: |
           cd build
-          ctest --output-on-failure
+          ./tests/run_tests
       
       - name: Collect coverage
         run: |
@@ -52,6 +47,7 @@ jobs:
           lcov --directory . --capture --output-file coverage.info --ignore-errors mismatch
           lcov --remove coverage.info '/usr/*' --output-file coverage.info --ignore-errors mismatch
           lcov --remove coverage.info '*/tests/*' --output-file coverage.info --ignore-errors mismatch
+          lcov --remove coverage.info '*/googletest/*' --output-file coverage.info --ignore-errors mismatch
           lcov --list coverage.info
       
       - name: Upload to Coveralls
@@ -59,3 +55,4 @@ jobs:
         with:
           file: build/coverage.info
           format: lcov
+
