@@ -13,7 +13,6 @@ add_executable(run_tests
 )
 
 target_include_directories(run_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/banking
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
